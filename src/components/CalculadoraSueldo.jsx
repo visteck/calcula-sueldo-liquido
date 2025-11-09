@@ -138,7 +138,30 @@ export default function CalculadoraSueldo() {
                 <div><strong>Sueldo mínimo:</strong> {Number(indicadores.RentaMinima).toLocaleString('es-CL')}</div>
                 <div><strong>UF:</strong> {Number(indicadores.uf).toLocaleString('es-CL')}</div>
                 <div><strong>UTM:</strong> {Number(indicadores.utm).toLocaleString('es-CL')}</div>
-                <div><strong>Periodo:</strong> {indicadores.periodo}</div>
+                <div><strong>Periodo:</strong> {(() => {
+                  if (!indicadores.periodo || typeof indicadores.periodo !== 'string') return indicadores.periodo;
+                  // Si viene como MMYYYY
+                  const match = indicadores.periodo.match(/^(\d{2})(\d{4})$/);
+                  if (match) {
+                    return `${match[1]}-${match[2]}`;
+                  }
+                  // Buscar año (4 dígitos) y mes (2 dígitos) en la cadena
+                  const match2 = indicadores.periodo.match(/(\d{4})[-/](\d{1,2})/);
+                  if (match2) {
+                    const year = match2[1];
+                    let month = match2[2];
+                    if (month.length === 1) month = '0' + month;
+                    return `${month}-${year}`;
+                  }
+                  // Si no coincide, intentar invertir si es MM-YYYY o YYYY-MM
+                  const alt = indicadores.periodo.match(/(\d{1,2})[-/](\d{4})/);
+                  if (alt) {
+                    let month = alt[1];
+                    if (month.length === 1) month = '0' + month;
+                    return `${month}-${alt[2]}`;
+                  }
+                  return indicadores.periodo;
+                })()}</div>
               </>
             )}
           </div>
