@@ -108,9 +108,21 @@ export default function CalculadoraSueldo() {
       .finally(() => setLoadingIndicadores(false));
   }, []);
 
+  // Inicializar tooltips de Bootstrap
+  useEffect(() => {
+    if (window.bootstrap) {
+      const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.forEach(tooltipTriggerEl => {
+        if (!tooltipTriggerEl._tooltipInstance) {
+          tooltipTriggerEl._tooltipInstance = new window.bootstrap.Tooltip(tooltipTriggerEl);
+        }
+      });
+    }
+  }, []);
+
   return (
     <div className="container py-5">
-      <h2 className="mb-4 text-center">Calculadora de Sueldo Líquido</h2>
+      <h2 className="mb-4 text-center">Calcula Sueldo Líquido</h2>
       <div className="row justify-content-center mb-4">
         <div className="col-md-8">
           <div className="alert alert-info d-flex flex-column flex-md-row align-items-md-center justify-content-between shadow-sm position-relative" style={{minHeight:'56px'}}>
@@ -149,13 +161,23 @@ export default function CalculadoraSueldo() {
           </select>
         </div>
         <div className="col-md-3 d-flex align-items-center">
-          <div className="form-check">
+          <div className="form-check d-flex align-items-center">
             <input className="form-check-input" type="checkbox" name="considerarGratificacion" checked={form.considerarGratificacion} onChange={handleChange} id="gratificacionCheck" />
-            <label className="form-check-label" htmlFor="gratificacionCheck">Gratificación</label>
+            <label className="form-check-label mb-0 ms-2" htmlFor="gratificacionCheck">Gratificación</label>
+            <span
+              className="ms-2"
+              tabIndex="0"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Para efectos de este cálculo, se tomará solo el Sueldo Base"
+              style={{cursor: 'pointer', fontSize: '1.2em'}}
+            >
+              ℹ️
+            </span>
           </div>
         </div>
         <div className="col-md-3">
-          <label className="form-label">Horas extra</label>
+          <label className="form-label">Monto Horas extra</label>
           <input type="number" className="form-control" name="horasExtra" value={form.horasExtra} onChange={handleChange} />
         </div>
         <div className="col-md-3">

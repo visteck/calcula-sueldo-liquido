@@ -1,8 +1,7 @@
 
-# calcula-sueldo-liquido
+# Calcula sueldo líquido
 
-
-Aplicación web para estimar el sueldo líquido de un trabajador en Chile, desarrollada con React y Bootstrap. Permite ingresar datos laborales y obtener una liquidación detallada, integrando indicadores económicos y cálculo vía API.
+Aplicación web para calcular el sueldo líquido de un trabajador en Chile, desarrollada con React y Bootstrap. Permite ingresar datos laborales y obtener una liquidación detallada, integrando indicadores económicos y cálculo vía API.
 
 ## Cambios recientes
 - El resultado muestra el tramo de asignación familiar (campo `tramoAsignacionFamiliar` del backend) en vez del número de cargas familiares.
@@ -50,7 +49,8 @@ El favicon se encuentra en `public/favicon.ico`. Puedes reemplazarlo por uno pro
 ## API utilizada
 - **Cálculo sueldo líquido:**
   - Endpoint: `https://victorcabrera.cl/apis/liquida-sueldo/calcular`
-  - Requiere header `x-api-key` (ver código fuente para detalles).
+  - Requiere header `x-api-key`.
+
 - **Indicadores previsionales:**
   - Endpoint: `https://victorcabrera.cl/apis/indicadores-previsionales/indicadores/`
 
