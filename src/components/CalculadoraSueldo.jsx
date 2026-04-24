@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const AFP_OPTIONS = [
   'Capital', 'Cuprum', 'Habitat', 'Modelo', 'Planvital', 'Provida', 'Uno'
@@ -18,7 +17,7 @@ export default function CalculadoraSueldo() {
     diasTrabajados: 30,
     sueldoBase: '',
     tipoContrato: 'indefinido',
-    considerarGratificacion: false,
+    considerarGratificacion: true,
     horasExtra: '',
     comisiones: '',
     bonosImponibles: '',
@@ -49,7 +48,6 @@ export default function CalculadoraSueldo() {
     setLoading(true);
     setError(null);
     setResultado(null);
-    // Prepara el body para la API
     const textoODash = v => (typeof v === 'string' && v.trim() === '') ? '-' : v;
     const body = {
       sueldoBase: Number(form.sueldoBase),
@@ -70,7 +68,7 @@ export default function CalculadoraSueldo() {
       apvUf: Number(form.apvUf)
     };
     try {
-  const res = await fetch('https://victorcabrera.cl/apis/liquida-sueldo/calcular', {
+      const res = await fetch('https://victorcabrera.cl/apis/liquida-sueldo/calcular', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +86,6 @@ export default function CalculadoraSueldo() {
     }
   };
 
-  // Estado para indicadores
   const [indicadores, setIndicadores] = useState({ RentaMinima: '-', uf: '-', utm: '-', periodo: '-' });
   const [loadingIndicadores, setLoadingIndicadores] = useState(true);
   useEffect(() => {
@@ -108,293 +105,399 @@ export default function CalculadoraSueldo() {
       .finally(() => setLoadingIndicadores(false));
   }, []);
 
+  const formatPeriodo = (periodo) => {
+    if (!periodo || typeof periodo !== 'string') return periodo;
+    const match = periodo.match(/^(\d{2})(\d{4})$/);
+    if (match) return `${match[1]}-${match[2]}`;
+    const match2 = periodo.match(/(\d{4})[-/](\d{1,2})/);
+    if (match2) {
+      let month = match2[2];
+      if (month.length === 1) month = '0' + month;
+      return `${month}-${match2[1]}`;
+    }
+    const alt = periodo.match(/(\d{1,2})[-/](\d{4})/);
+    if (alt) {
+      let month = alt[1];
+      if (month.length === 1) month = '0' + month;
+      return `${month}-${alt[2]}`;
+    }
+    return periodo;
+  };
 
   return (
-    <div className="container py-5">
-      <h2 className="mb-4 text-center">Calcula Sueldo Líquido</h2>
-      <div className="row justify-content-center mb-4">
-        <div className="col-md-8">
-          <div className="alert alert-info d-flex flex-column flex-md-row align-items-md-center justify-content-between shadow-sm position-relative" style={{minHeight:'56px'}}>
+    <div className="min-h-screen py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Título */}
+        <h1 className="text-4xl font-bold text-center text-white mb-8 drop-shadow-lg">
+          Calcula Sueldo Líquido
+        </h1>
+
+        {/* Indicadores */}
+        <div className="mb-8">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 border border-white/20">
             {loadingIndicadores ? (
-              <div className="w-100 d-flex justify-content-center align-items-center" style={{minHeight:'40px'}}>
-                <div className="spinner-border text-primary me-2" role="status" style={{width:'2rem',height:'2rem'}}>
-                  <span className="visually-hidden">Cargando...</span>
-                </div>
-                <span className="fw-bold">Cargando indicadores...</span>
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mr-3"></div>
+                <span className="text-white font-semibold">Cargando indicadores...</span>
               </div>
             ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
+                <div className="text-center">
+                  <p className="text-sm opacity-80">Sueldo mínimo</p>
+                  <p className="text-xl font-bold">{Number(indicadores.RentaMinima).toLocaleString('es-CL')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm opacity-80">UF</p>
+                  <p className="text-xl font-bold">{Number(indicadores.uf).toLocaleString('es-CL')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm opacity-80">UTM</p>
+                  <p className="text-xl font-bold">{Number(indicadores.utm).toLocaleString('es-CL')}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm opacity-80">Periodo</p>
+                  <p className="text-xl font-bold">{formatPeriodo(indicadores.periodo)}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 mb-8">
+          {/* Haberes */}
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Haberes</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Días trabajados</label>
+              <input
+                type="number"
+                name="diasTrabajados"
+                min="1"
+                max="31"
+                value={form.diasTrabajados}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sueldo base</label>
+              <input
+                type="number"
+                name="sueldoBase"
+                value={form.sueldoBase}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tipo contrato</label>
+              <select
+                name="tipoContrato"
+                value={form.tipoContrato}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              >
+                {CONTRATO_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="considerarGratificacion"
+                  checked={form.considerarGratificacion}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-700">Gratificación</span>
+                <span
+                  className="ml-2 cursor-help text-lg"
+                  title="Para efectos de este cálculo, se tomará solo el Sueldo Base"
+                >
+                  ℹ️
+                </span>
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Monto Horas extra</label>
+              <input
+                type="number"
+                name="horasExtra"
+                value={form.horasExtra}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Comisiones</label>
+              <input
+                type="number"
+                name="comisiones"
+                value={form.comisiones}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Bonos imponibles</label>
+              <input
+                type="number"
+                name="bonosImponibles"
+                value={form.bonosImponibles}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Colación</label>
+              <input
+                type="number"
+                name="colacion"
+                value={form.colacion}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Movilización</label>
+              <input
+                type="number"
+                name="movilizacion"
+                value={form.movilizacion}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">N° cargas familiares</label>
+              <input
+                type="number"
+                name="cargasFamiliares"
+                value={form.cargasFamiliares}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+          </div>
+
+          {/* Descuentos */}
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 mt-8">Descuentos</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">AFP</label>
+              <select
+                name="afp"
+                value={form.afp}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              >
+                {AFP_OPTIONS.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">APV en UF</label>
+              <input
+                type="number"
+                name="apvUf"
+                value={form.apvUf}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sistema de Salud</label>
+              <select
+                name="sistemaSalud"
+                value={form.sistemaSalud}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              >
+                {SALUD_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            {form.sistemaSalud === 'isapre' && (
               <>
-                <div><strong>Sueldo mínimo:</strong> {Number(indicadores.RentaMinima).toLocaleString('es-CL')}</div>
-                <div><strong>UF:</strong> {Number(indicadores.uf).toLocaleString('es-CL')}</div>
-                <div><strong>UTM:</strong> {Number(indicadores.utm).toLocaleString('es-CL')}</div>
-                <div><strong>Periodo:</strong> {(() => {
-                  if (!indicadores.periodo || typeof indicadores.periodo !== 'string') return indicadores.periodo;
-                  // Si viene como MMYYYY
-                  const match = indicadores.periodo.match(/^(\d{2})(\d{4})$/);
-                  if (match) {
-                    return `${match[1]}-${match[2]}`;
-                  }
-                  // Buscar año (4 dígitos) y mes (2 dígitos) en la cadena
-                  const match2 = indicadores.periodo.match(/(\d{4})[-/](\d{1,2})/);
-                  if (match2) {
-                    const year = match2[1];
-                    let month = match2[2];
-                    if (month.length === 1) month = '0' + month;
-                    return `${month}-${year}`;
-                  }
-                  // Si no coincide, intentar invertir si es MM-YYYY o YYYY-MM
-                  const alt = indicadores.periodo.match(/(\d{1,2})[-/](\d{4})/);
-                  if (alt) {
-                    let month = alt[1];
-                    if (month.length === 1) month = '0' + month;
-                    return `${month}-${alt[2]}`;
-                  }
-                  return indicadores.periodo;
-                })()}</div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre Isapre</label>
+                  <input
+                    type="text"
+                    name="isapreNombre"
+                    value={form.isapreNombre}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Plan de salud Isapre (UF)</label>
+                  <input
+                    type="number"
+                    name="isaprePlanUf"
+                    value={form.isaprePlanUf}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  />
+                </div>
               </>
             )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Otros descuentos</label>
+              <input
+                type="number"
+                name="otrosDescuentos"
+                value={form.otrosDescuentos}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+              />
+            </div>
           </div>
-        </div>
-      </div>
-      <form className="row g-3 bg-light p-4 rounded shadow" onSubmit={handleSubmit}>
-        <h4>Haberes</h4>
-        <div className="col-md-3">
-          <label className="form-label">Días trabajados</label>
-          <input type="number" className="form-control" name="diasTrabajados" min="1" max="31" value={form.diasTrabajados} onChange={handleChange} required />
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Sueldo base</label>
-          <input type="number" className="form-control" name="sueldoBase" value={form.sueldoBase} onChange={handleChange} required />
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Tipo contrato</label>
-          <select className="form-select" name="tipoContrato" value={form.tipoContrato} onChange={handleChange} required>
-            {CONTRATO_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-        </div>
-        <div className="col-md-3 d-flex align-items-center">
-          <div className="form-check d-flex align-items-center">
-            <input className="form-check-input" type="checkbox" name="considerarGratificacion" checked={form.considerarGratificacion} onChange={handleChange} id="gratificacionCheck" />
-            <label className="form-check-label mb-0 ms-2" htmlFor="gratificacionCheck">Gratificación</label>
-            <span
-              className="ms-2"
-              tabIndex="0"
-              title="Para efectos de este cálculo, se tomará solo el Sueldo Base"
-              style={{cursor: 'pointer', fontSize: '1.2em'}}
+
+          {/* Botón */}
+          <div className="flex justify-center mt-8">
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-purple-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 flex items-center gap-2"
             >
-              ℹ️
-            </span>
+              {loading && (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              )}
+              {loading ? 'Calculando...' : 'Calcular Sueldo Líquido'}
+            </button>
           </div>
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Monto Horas extra</label>
-          <input type="number" className="form-control" name="horasExtra" value={form.horasExtra} onChange={handleChange} />
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Comisiones</label>
-          <input type="number" className="form-control" name="comisiones" value={form.comisiones} onChange={handleChange} />
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Bonos imponibles</label>
-          <input type="number" className="form-control" name="bonosImponibles" value={form.bonosImponibles} onChange={handleChange} />
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Colación</label>
-          <input type="number" className="form-control" name="colacion" value={form.colacion} onChange={handleChange} />
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Movilización</label>
-          <input type="number" className="form-control" name="movilizacion" value={form.movilizacion} onChange={handleChange} />
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">N° cargas familiares</label>
-          <input type="number" className="form-control" name="cargasFamiliares" value={form.cargasFamiliares} onChange={handleChange} />
-        </div>
-        <h4 className="mt-4">Descuentos</h4>
-        <div className="col-md-3">
-          <label className="form-label">AFP</label>
-          <select className="form-select" name="afp" value={form.afp} onChange={handleChange} required>
-            {AFP_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-          </select>
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">APV en UF</label>
-          <input type="number" className="form-control" name="apvUf" value={form.apvUf} onChange={handleChange} />
-        </div>
-        <div className="col-md-3">
-          <label className="form-label">Sistema de Salud</label>
-          <select className="form-select" name="sistemaSalud" value={form.sistemaSalud} onChange={handleChange} required>
-            {SALUD_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-        </div>
-        {form.sistemaSalud === 'isapre' && (
-          <>
-            <div className="col-md-3">
-              <label className="form-label">Nombre Isapre</label>
-              <input type="text" className="form-control" name="isapreNombre" value={form.isapreNombre} onChange={handleChange} />
+
+          {error && (
+            <div className="mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              {error}
             </div>
-            <div className="col-md-3">
-              <label className="form-label">Plan de salud Isapre (UF)</label>
-              <input type="number" className="form-control" name="isaprePlanUf" value={form.isaprePlanUf} onChange={handleChange} />
-            </div>
-          </>
-        )}
-        <div className="col-md-3">
-          <label className="form-label">Otros descuentos</label>
-          <input type="number" className="form-control" name="otrosDescuentos" value={form.otrosDescuentos} onChange={handleChange} />
-        </div>
-        <div className="col-12 d-flex justify-content-center mt-4">
-          <button type="submit" className="btn btn-primary btn-lg d-flex align-items-center justify-content-center" disabled={loading}>
-            {loading && (
-              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            )}
-            {loading ? 'Calculando...' : 'Calcular Sueldo Líquido'}
-          </button>
-        </div>
-        {error && <div className="alert alert-danger mt-3">{error}</div>}
-      </form>
-      {resultado && resultado.result && (
-        <div className="mt-5">
-          <h3 className="text-center mb-4">Liquidación de Sueldo</h3>
-          <div className="row justify-content-center">
-            <div className="col-md-10 col-lg-8">
-              <div className="card shadow-lg border-primary mb-4">
-                <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                  <span className="fw-bold">Detalle de Haberes y Descuentos</span>
-                  <span style={{fontSize:'0.9em'}}>por <a href="https://victorcabrera.cl" className="text-white text-decoration-underline" target="_blank" rel="noopener noreferrer">Victor Cabrera</a></span>
+          )}
+        </form>
+
+        {/* Resultados */}
+        {resultado && resultado.result && (
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Liquidación de Sueldo</h2>
+            
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              {/* Haberes */}
+              <div>
+                <h3 className="text-xl font-bold text-green-600 mb-4">Haberes</h3>
+                <div className="space-y-2">
+                  {resultado.result.haberes && [
+                    { label: 'Sueldo base', value: resultado.result.haberes.sueldoBaseCalculado },
+                    { label: 'Gratificación', value: resultado.result.haberes.gratificacion },
+                    { label: 'Horas extra', value: resultado.result.haberes.horasExtra },
+                    { label: 'Comisiones', value: resultado.result.haberes.comisiones },
+                    { label: 'Bonos imponibles', value: resultado.result.haberes.bonosImponibles },
+                    { label: 'Colación', value: resultado.result.haberes.colacion },
+                    { label: 'Movilización', value: resultado.result.haberes.movilizacion },
+                    { label: 'Asignación Familiar', value: resultado.result.haberes.asignacionFamiliar }
+                  ]
+                  .filter(item => item.value !== undefined && item.value !== 0)
+                  .map((item) => (
+                    <div key={item.label} className="flex justify-between py-2 border-b border-gray-200">
+                      <span className="text-gray-700">{item.label}:</span>
+                      <span className="font-semibold text-gray-900">${item.value.toLocaleString('es-CL')}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between py-3 bg-green-50 px-3 rounded-lg mt-2">
+                    <span className="font-bold text-gray-800">Total haberes:</span>
+                    <span className="font-bold text-green-600">${resultado.result.haberes?.TotalHaberes?.toLocaleString('es-CL') || '-'}</span>
+                  </div>
                 </div>
-                <div className="card-body bg-light">
-                  <div className="row">
-                    <div className="col-md-6 border-end">
-                      <h5 className="text-primary">Haberes</h5>
-                      <ul className="list-group list-group-flush mb-3">
-                        {resultado.result.haberes && [
-                          { label: 'Sueldo base', value: resultado.result.haberes.sueldoBaseCalculado },
-                          { label: 'Gratificación', value: resultado.result.haberes.gratificacion },
-                          { label: 'Horas extra', value: resultado.result.haberes.horasExtra },
-                          { label: 'Comisiones', value: resultado.result.haberes.comisiones },
-                          { label: 'Bonos imponibles', value: resultado.result.haberes.bonosImponibles },
-                          { label: 'Colación', value: resultado.result.haberes.colacion },
-                          { label: 'Movilización', value: resultado.result.haberes.movilizacion },
-                          { label: 'Asignación Familiar', value: resultado.result.haberes.asignacionFamiliar }
-                        ]
-                        .filter(item => item.value !== undefined && item.value !== 0)
-                        .map((item, idx) => (
-                          <li key={item.label} className="list-group-item d-flex justify-content-between align-items-center">
-                            <span className="text-start">{item.label}:</span>
-                            <span className="float-end">{item.value.toLocaleString('es-CL')}</span>
-                          </li>
-                        ))}
-                        <li className="list-group-item fw-bold d-flex justify-content-between align-items-center">
-                          <span className="text-start">Total haberes:</span>
-                          <span className="float-end">{resultado.result.haberes?.TotalHaberes !== undefined ? resultado.result.haberes.TotalHaberes.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="col-md-6">
-                      <h5 className="text-danger">Descuentos</h5>
-                      <ul className="list-group list-group-flush mb-3">
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">AFP obligatorio:</span>
-                          <span className="float-end">{resultado.result.descuentos?.afpObligatorio !== undefined ? resultado.result.descuentos.afpObligatorio.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">Comisión AFP:</span>
-                          <span className="float-end">{resultado.result.descuentos?.comisionAfp !== undefined ? resultado.result.descuentos.comisionAfp.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">Salud:</span>
-                          <span className="float-end">{resultado.result.descuentos?.salud !== undefined ? resultado.result.descuentos.salud.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">Seguro cesantía:</span>
-                          <span className="float-end">{resultado.result.descuentos?.seguroCesantia !== undefined ? resultado.result.descuentos.seguroCesantia.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">Impuesto único:</span>
-                          <span className="float-end">{resultado.result.descuentos?.impuestoUnico !== undefined ? resultado.result.descuentos.impuestoUnico.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">APV:</span>
-                          <span className="float-end">{resultado.result.descuentos?.apv !== undefined ? resultado.result.descuentos.apv.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">Otros descuentos:</span>
-                          <span className="float-end">{resultado.result.descuentos?.otrosDescuentos !== undefined ? resultado.result.descuentos.otrosDescuentos.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                        <li className="list-group-item fw-bold d-flex justify-content-between align-items-center">
-                          <span className="text-start">Total descuentos:</span>
-                          <span className="float-end">{resultado.result.descuentos?.totalDescuentos !== undefined ? resultado.result.descuentos.totalDescuentos.toLocaleString('es-CL') : '-'}</span>
-                        </li>
-                      </ul>
-                    </div>
+              </div>
+
+              {/* Descuentos */}
+              <div>
+                <h3 className="text-xl font-bold text-red-600 mb-4">Descuentos</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-700">AFP obligatorio:</span>
+                    <span className="font-semibold text-gray-900">${resultado.result.descuentos?.afpObligatorio?.toLocaleString('es-CL') || '-'}</span>
                   </div>
-                  <div className="row mt-4">
-                    <div className="col-12">
-                      <h5 className="text-secondary">Otros datos</h5>
-                      <ul className="list-group list-group-flush mb-3">
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">AFP:</span>
-                          <span className="float-end">{resultado.result.otros?.afp || '-'}</span>
-                        </li>
-                        {resultado.result.otros?.isapreNombre && resultado.result.otros.isapreNombre !== '-' && (
-                          <li className="list-group-item d-flex justify-content-between align-items-center">
-                            <span className="text-start">Nombre Isapre:</span>
-                            <span className="float-end">{resultado.result.otros.isapreNombre}</span>
-                          </li>
-                        )}
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">Sistema Salud:</span>
-                          <span className="float-end">{resultado.result.otros?.sistemaSalud || '-'}</span>
-                        </li>
-                        {resultado.result.otros?.jornadaTrabajo && (
-                          <li className="list-group-item d-flex justify-content-between align-items-center">
-                            <span className="text-start">Jornada de trabajo:</span>
-                            <span className="float-end">{resultado.result.otros.jornadaTrabajo} horas</span>
-                          </li>
-                        )}
-                        {resultado.result.otros?.afectoLeyesSociales && (
-                          <li className="list-group-item d-flex justify-content-between align-items-center">
-                            <span className="text-start">Afecto leyes sociales:</span>
-                            <span className="float-end">{resultado.result.otros.afectoLeyesSociales.toLocaleString('es-CL')}</span>
-                          </li>
-                        )}
-                        {resultado.result.otros?.afectoSeguroCesantia && (
-                          <li className="list-group-item d-flex justify-content-between align-items-center">
-                            <span className="text-start">Afecto seguro cesantía:</span>
-                            <span className="float-end">{resultado.result.otros.afectoSeguroCesantia.toLocaleString('es-CL')}</span>
-                          </li>
-                        )}
-                        {resultado.result.otros?.afectoImpuestoUnico && (
-                          <li className="list-group-item d-flex justify-content-between align-items-center">
-                            <span className="text-start">Afecto impuesto único:</span>
-                            <span className="float-end">{resultado.result.otros.afectoImpuestoUnico.toLocaleString('es-CL')}</span>
-                          </li>
-                        )}
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span className="text-start">Días trabajados:</span>
-                          <span className="float-end">{resultado.result.otros?.diasTrabajados !== undefined ? resultado.result.otros.diasTrabajados : '-'}</span>
-                        </li>
-                        {resultado.result.haberes?.asignacionFamiliar > 0 && (
-                          <li className="list-group-item d-flex justify-content-between align-items-center">
-                            <span className="text-start">Tramo asignación familiar:</span>
-                            <span className="float-end">{resultado.result.otros?.tramoAsignacionFamiliar || '-'}</span>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-700">Comisión AFP:</span>
+                    <span className="font-semibold text-gray-900">${resultado.result.descuentos?.comisionAfp?.toLocaleString('es-CL') || '-'}</span>
                   </div>
-                  <div className="row mt-4">
-                    <div className="col-12 text-center">
-                      <h3 className="display-6">Sueldo Líquido: <span className="text-success fw-bold">{resultado.result.sueldoLiquido !== undefined ? resultado.result.sueldoLiquido.toLocaleString('es-CL') : '-'}</span></h3>
-                    </div>
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-700">Salud:</span>
+                    <span className="font-semibold text-gray-900">${resultado.result.descuentos?.salud?.toLocaleString('es-CL') || '-'}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-700">Seguro cesantía:</span>
+                    <span className="font-semibold text-gray-900">${resultado.result.descuentos?.seguroCesantia?.toLocaleString('es-CL') || '-'}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-700">Impuesto único:</span>
+                    <span className="font-semibold text-gray-900">${resultado.result.descuentos?.impuestoUnico?.toLocaleString('es-CL') || '-'}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-700">APV:</span>
+                    <span className="font-semibold text-gray-900">${resultado.result.descuentos?.apv?.toLocaleString('es-CL') || '-'}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-200">
+                    <span className="text-gray-700">Otros descuentos:</span>
+                    <span className="font-semibold text-gray-900">${resultado.result.descuentos?.otrosDescuentos?.toLocaleString('es-CL') || '-'}</span>
+                  </div>
+                  <div className="flex justify-between py-3 bg-red-50 px-3 rounded-lg mt-2">
+                    <span className="font-bold text-gray-800">Total descuentos:</span>
+                    <span className="font-bold text-red-600">${resultado.result.descuentos?.totalDescuentos?.toLocaleString('es-CL') || '-'}</span>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Otros datos */}
+            <div className="mb-8">
+              <h3 className="text-xl font-bold text-gray-700 mb-4">Otros datos</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">AFP</p>
+                  <p className="font-semibold">{resultado.result.otros?.afp || '-'}</p>
+                </div>
+                {resultado.result.otros?.isapreNombre && resultado.result.otros.isapreNombre !== '-' && (
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600">Nombre Isapre</p>
+                    <p className="font-semibold">{resultado.result.otros.isapreNombre}</p>
+                  </div>
+                )}
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Sistema Salud</p>
+                  <p className="font-semibold">{resultado.result.otros?.sistemaSalud || '-'}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Días trabajados</p>
+                  <p className="font-semibold">{resultado.result.otros?.diasTrabajados ?? '-'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sueldo Líquido */}
+            <div className="text-center py-8 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-xl">
+              <p className="text-2xl text-gray-700 mb-2">Sueldo Líquido</p>
+              <p className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
+                ${resultado.result.sueldoLiquido?.toLocaleString('es-CL') || '-'}
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center mt-6 text-sm text-gray-500">
+              por <a href="https://victorcabrera.cl" className="text-purple-600 hover:underline" target="_blank" rel="noopener noreferrer">Victor Cabrera</a>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
