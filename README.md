@@ -1,62 +1,221 @@
 
-# Calcula sueldo líquido
+# Calcula Sueldo Líquido
 
-Aplicación web para calcular el sueldo líquido de un trabajador en Chile, desarrollada con React y Bootstrap. Permite ingresar datos laborales y obtener una liquidación detallada, integrando indicadores económicos y cálculo vía API.
+Aplicación web moderna para calcular el sueldo líquido de trabajadores en Chile. Desarrollada con React y Tailwind CSS, permite ingresar datos laborales y obtener una liquidación detallada con todos los descuentos legales vigentes.
 
-## Cambios recientes
-- El resultado muestra el tramo de asignación familiar (campo `tramoAsignacionFamiliar` del backend) en vez del número de cargas familiares.
-- El botón de calcular está centrado y muestra un spinner de carga.
+## 🌟 Características
 
-## Características
-- Formulario interactivo con campos relevantes para el cálculo de sueldo líquido.
-- Integración con API externa para cálculo preciso y actualizado.
-- Consulta dinámica de indicadores previsionales.
-- Resultados detallados: haberes, descuentos, tramo de asignación familiar, y otros datos.
-- Spinner de carga y validaciones de campos.
-- Responsive y diseño moderno con Bootstrap.
-- Preparada para despliegue en subcarpetas (ej: cPanel).
+- **Diseño moderno** con Tailwind CSS v3
+  - Gradientes púrpura/índigo
+  - Efectos glassmorphism
+  - Animaciones y transiciones suaves
+  - Totalmente responsive
+  
+- **Cálculo preciso** vía API
+  - Integración con backend actualizado
+  - Todos los descuentos legales (AFP, Salud, Impuestos)
+  - Gratificación automática (activada por defecto)
+  - Asignación familiar según tramos vigentes
 
-## Instalación y uso local
-1. Clona el repositorio o descarga los archivos.
-2. Instala dependencias:
-	```sh
-	npm install
-	```
-3. Ejecuta en modo desarrollo:
-	```sh
-	npm run dev
-	```
-4. Accede a `http://localhost:5173` (o el puerto indicado).
+- **Indicadores actualizados**
+  - Sueldo mínimo, UF, UTM
+  - Consulta dinámica en tiempo real
+  - Formato de período MM-YYYY
 
-## Despliegue en producción (ejemplo cPanel)
-1. Ejecuta la build:
-	```sh
-	npm run build
-	```
-2. Sube el contenido de la carpeta `dist/` a tu subcarpeta en el hosting.
-3. Asegúrate de que el archivo `.htaccess` permita el enrutamiento SPA.
-4. El favicon y los assets se referencian automáticamente según la configuración de `vite.config.js`.
+- **Robustez y confiabilidad**
+  - Error Boundary para manejo de errores
+  - Protección contra Google Translate
+  - Optimización con React useMemo
+  - Compatible con todos los navegadores modernos
 
-## Personalización del favicon
-El favicon se encuentra en `public/favicon.ico`. Puedes reemplazarlo por uno propio relacionado con sueldos o finanzas. El sistema puede generar un favicon básico si lo necesitas.
+- **Footer profesional**
+  - Información del desarrollador
+  - Enlaces a GitHub, email, APIs
+  - Especialidades destacadas
 
-## Estructura principal
-- `src/components/CalculadoraSueldo.jsx`: Componente principal del formulario y resultados.
-- `src/App.jsx`, `src/main.jsx`: Entradas de la app.
-- `public/`: Archivos estáticos (favicon, etc).
-- `vite.config.js`: Configuración de rutas/base para despliegue.
+## 🚀 Demo
 
-## API utilizada
-- **Cálculo sueldo líquido:**
-  - Endpoint: `https://victorcabrera.cl/apis/liquida-sueldo/calcular`
-  - Requiere header `x-api-key`.
+**Producción:** [https://victorcabrera.cl/apps/calcula-sueldo-liquido/](https://victorcabrera.cl/apps/calcula-sueldo-liquido/)
 
-- **Indicadores previsionales:**
-  - Endpoint: `https://victorcabrera.cl/apis/indicadores-previsionales/indicadores/`
+## 📦 Instalación
 
+```bash
+# Clonar repositorio
+git clone https://github.com/visteck/calcula-sueldo-liquido.git
+cd calcula-sueldo-liquido
 
-## Créditos
-Desarrollado por Victor Cabrera.
+# Instalar dependencias
+npm install
+
+# Modo desarrollo
+npm run dev
+```
+
+Accede a `http://localhost:5173/apps/calcula-sueldo-liquido/`
+
+## 🔧 Configuración
+
+### Variables de entorno
+
+Crea un archivo `.env` en la raíz:
+
+```env
+VITE_API_KEY=tu-api-key-aqui
+```
+
+### Ruta de despliegue
+
+La aplicación está configurada para desplegarse en `/apps/calcula-sueldo-liquido/`. 
+
+Para cambiar la ruta, edita `vite.config.js`:
+
+```javascript
+export default defineConfig({
+  base: '/tu-ruta-personalizada/'
+})
+```
+
+## 🏗️ Build y Despliegue
+
+```bash
+# Generar build de producción
+npm run build
+
+# Los archivos estarán en dist/
+```
+
+### Despliegue en cPanel
+
+1. Ejecuta `npm run build`
+2. Sube el contenido de `dist/` a `public_html/apps/calcula-sueldo-liquido/`
+3. Asegúrate de que los archivos `.htaccess` permitan SPAs
+
+Estructura después del despliegue:
+```
+public_html/apps/calcula-sueldo-liquido/
+├── index.html
+└── assets/
+    ├── index-[hash].css
+    └── index-[hash].js
+```
+
+## 📁 Estructura del Proyecto
+
+```
+calcula-sueldo-liquido/
+├── src/
+│   ├── components/
+│   │   ├── CalculadoraSueldo.jsx  # Componente principal
+│   │   └── ErrorBoundary.jsx      # Manejo de errores
+│   ├── App.jsx
+│   ├── main.jsx
+│   ├── index.css                   # Tailwind directives
+│   └── App.css
+├── public/
+│   └── favicon.ico
+├── dist/                           # Build de producción (generado)
+├── tailwind.config.js              # Configuración Tailwind
+├── postcss.config.js               # PostCSS para Tailwind
+├── vite.config.js                  # Configuración Vite
+└── package.json
+```
+
+## 🔌 APIs Utilizadas
+
+### API Cálculo de Sueldo Líquido
+- **Endpoint:** `https://victorcabrera.cl/apis/liquida-sueldo/calcular`
+- **Método:** POST
+- **Headers:** `x-api-key: [tu-api-key]`
+- **Documentación:** [Ver docs](https://victorcabrera.cl/apis/liquida-sueldo/docs/)
+
+### API Indicadores Previsionales
+- **Endpoint:** `https://victorcabrera.cl/apis/indicadores-previsionales/indicadores/`
+- **Método:** GET
+- **Documentación:** [Ver docs](https://victorcabrera.cl/apis/indicadores-previsionales/)
+
+## 🛠️ Stack Tecnológico
+
+- **React** 19.1.1
+- **Tailwind CSS** 3.x
+- **Vite** 7.2.2
+- **PostCSS** + Autoprefixer
+- **ESLint** para linting
+
+## 🎨 Personalización
+
+### Colores
+
+Los colores principales están definidos con gradientes de Tailwind. Para cambiar el esquema de colores, busca en `CalculadoraSueldo.jsx`:
+
+```javascript
+// Ejemplo de gradiente actual
+className="bg-gradient-to-r from-purple-600 to-indigo-600"
+```
+
+### Footer
+
+Edita la información del desarrollador en la sección del footer del componente `CalculadoraSueldo.jsx`.
+
+## 🐛 Solución de Problemas
+
+### Error en Chrome con extensiones
+
+Si ves errores de `insertBefore` en Chrome:
+- La app tiene Error Boundary integrado
+- Desactiva Google Translate automático
+- Prueba en modo incógnito
+- Usa Firefox o Edge como alternativa
+
+### Build no funciona
+
+```bash
+# Limpia node_modules y reinstala
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
+
+## 📝 Changelog
+
+### v2.0.0 (Abril 2026)
+- ✅ Migración completa de Bootstrap a Tailwind CSS v3
+- ✅ Diseño moderno con glassmorphism y gradientes
+- ✅ Error Boundary para manejo robusto de errores
+- ✅ Protección contra Google Translate
+- ✅ Optimización de renderizado con useMemo
+- ✅ Footer profesional con información del desarrollador
+- ✅ Gratificación activada por defecto
+- ✅ Título cambiado a "Calcula Sueldo Líquido"
+- ✅ Ruta actualizada a `/apps/calcula-sueldo-liquido/`
+
+### v1.0.0 (2025)
+- Versión inicial con Bootstrap
+- Integración básica con APIs
+
+## 👨‍💻 Autor
+
+**Víctor Cabrera**
+- Ingeniero Fullstack • Especialista en ERPs
+- +15 años de experiencia en soluciones empresariales
+- 🌐 [victorcabrera.cl](https://victorcabrera.cl)
+- 📧 [vicabrera@gmail.com](mailto:vicabrera@gmail.com)
+- 💻 [github.com/visteck](https://github.com/visteck)
+
+## 📄 Licencia
+
+Este proyecto es de uso libre para fines educativos y personales.
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea tu rama de características (`git checkout -b feature/nueva-caracteristica`)
+3. Commit tus cambios (`git commit -m 'feat: agregar nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
+5. Abre un Pull Request
 
 ---
-¿Dudas o sugerencias? Abre un issue o contacta al autor.
+
+**¿Dudas o sugerencias?** Abre un [issue](https://github.com/visteck/calcula-sueldo-liquido/issues) o contáctame directamente.
+
