@@ -108,17 +108,6 @@ export default function CalculadoraSueldo() {
       .finally(() => setLoadingIndicadores(false));
   }, []);
 
-  // Inicializar tooltips de Bootstrap
-  useEffect(() => {
-    if (window.bootstrap) {
-      const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-      tooltipTriggerList.forEach(tooltipTriggerEl => {
-        if (!tooltipTriggerEl._tooltipInstance) {
-          tooltipTriggerEl._tooltipInstance = new window.bootstrap.Tooltip(tooltipTriggerEl);
-        }
-      });
-    }
-  }, []);
 
   return (
     <div className="container py-5">
@@ -190,8 +179,6 @@ export default function CalculadoraSueldo() {
             <span
               className="ms-2"
               tabIndex="0"
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
               title="Para efectos de este cálculo, se tomará solo el Sueldo Base"
               style={{cursor: 'pointer', fontSize: '1.2em'}}
             >
