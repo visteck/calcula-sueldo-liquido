@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 const AFP_OPTIONS = [
   'Capital', 'Cuprum', 'Habitat', 'Modelo', 'Planvital', 'Provida', 'Uno'
@@ -123,6 +123,21 @@ export default function CalculadoraSueldo() {
     }
     return periodo;
   };
+
+  // Memoizar los items de haberes para evitar recreación en cada render
+  const haberesItems = useMemo(() => {
+    if (!resultado?.result?.haberes) return [];
+    return [
+      { id: 'sueldo-base', label: 'Sueldo base', value: resultado.result.haberes.sueldoBaseCalculado },
+      { id: 'gratificacion', label: 'Gratificación', value: resultado.result.haberes.gratificacion },
+      { id: 'horas-extra', label: 'Horas extra', value: resultado.result.haberes.horasExtra },
+      { id: 'comisiones', label: 'Comisiones', value: resultado.result.haberes.comisiones },
+      { id: 'bonos', label: 'Bonos imponibles', value: resultado.result.haberes.bonosImponibles },
+      { id: 'colacion', label: 'Colación', value: resultado.result.haberes.colacion },
+      { id: 'movilizacion', label: 'Movilización', value: resultado.result.haberes.movilizacion },
+      { id: 'asig-familiar', label: 'Asignación Familiar', value: resultado.result.haberes.asignacionFamiliar }
+    ].filter(item => item.value !== undefined && item.value !== 0);
+  }, [resultado]);
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -394,19 +409,8 @@ export default function CalculadoraSueldo() {
               <div>
                 <h3 className="text-xl font-bold text-green-600 mb-4">Haberes</h3>
                 <div className="space-y-2">
-                  {resultado.result.haberes && [
-                    { label: 'Sueldo base', value: resultado.result.haberes.sueldoBaseCalculado },
-                    { label: 'Gratificación', value: resultado.result.haberes.gratificacion },
-                    { label: 'Horas extra', value: resultado.result.haberes.horasExtra },
-                    { label: 'Comisiones', value: resultado.result.haberes.comisiones },
-                    { label: 'Bonos imponibles', value: resultado.result.haberes.bonosImponibles },
-                    { label: 'Colación', value: resultado.result.haberes.colacion },
-                    { label: 'Movilización', value: resultado.result.haberes.movilizacion },
-                    { label: 'Asignación Familiar', value: resultado.result.haberes.asignacionFamiliar }
-                  ]
-                  .filter(item => item.value !== undefined && item.value !== 0)
-                  .map((item) => (
-                    <div key={item.label} className="flex justify-between py-2 border-b border-gray-200">
+                  {haberesItems.map((item) => (
+                    <div key={item.id} className="flex justify-between py-2 border-b border-gray-200">
                       <span className="text-gray-700">{item.label}:</span>
                       <span className="font-semibold text-gray-900">${item.value.toLocaleString('es-CL')}</span>
                     </div>
